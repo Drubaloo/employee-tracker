@@ -32,7 +32,7 @@ function start() {
     .prompt({
       type: `list`,
       message: `What would you like to do?`,
-      choices: [`View all employees`, `View all employees by department`, `View all employees by manager`, `Add employee`, `Remove employee`, `Update employee role`, `Update employee manager`, `View all roles`, `Add role`, `Remove role`],
+      choices: [`View all employees`, `View all employees by department`, `View all employees by manager`, `Add employee`, `Remove employee`, `Update employee role`, `Update employee manager`, `View all roles`, `Add role`, `Remove role`, `Add department`, `Remove department`, `See all departments`],
       name: `initialize`
     }).then((answer) => {
       console.log(answer)
@@ -53,15 +53,57 @@ function start() {
           addEmployee()
           break
 
-          case `Remove employee`:
-            removeEmployee()
-            break
+        case `Remove employee`:
+          removeEmployee()
+          break
+
+        case `Update employee role`:
+          updateEmployeeRole()
+          break
+
+        case `Update employee manager`:
+          updateEmployeeManager()
+          break
+
+        case `View all roles`:
+          viewAllRoles()
+          break
+
+        case `Add role`:
+          addRole()
+          break
+
+        case `Remove role`:
+          removeRole()
+          break
+
+        case `Add department`:
+          addDepartment()
+          break
+        
+        case `Remove department`:
+          removeDepartment()
+          break
+
+        case `See all departments`:
+          seeDepartments()
+          break
       }
     })
 }
 
 const getAllEmployees = function () {
   connection.query("SELECT * FROM tracker_db.employee;", function (err, res) {
+    if (err) throw err;
+
+    console.table(res)
+
+    start()
+  })
+}
+
+const seeDepartments = function () {
+  connection.query("SELECT * FROM tracker_db.department;", function (err, res) {
     if (err) throw err;
 
     console.table(res)
@@ -125,19 +167,193 @@ const removeEmployee = function () {
   })
 
   inquirer
-  .prompt({
-    type: `input`,
-    message: `What employee ID do you want to delete?`,
-    name: `deleteID`
-  }).then((answer) => {
-    console.log(answer)
-    connection.query("DELETE FROM tracker_db.employee WHERE id = ?", answer.deleteID, function (err, res) {
-      if (err) throw err;
+    .prompt({
+      type: `input`,
+      message: `What employee ID do you want to delete?`,
+      name: `deleteID`
+    }).then((answer) => {
+      console.log(answer)
+      connection.query("DELETE FROM tracker_db.employee WHERE id = ?", answer.deleteID, function (err, res) {
+        if (err) throw err;
 
-      console.log(`Employee deleted`)
-      start()
+        console.log(`Employee deleted`)
+        start()
+      })
     })
+}
+
+const updateEmployeeRole = function () {
+  connection.query("SELECT * FROM tracker_db.employee;", function (err, res) {
+    if (err) throw err;
+
+    console.table(res)
   })
+  connection.query("SELECT * FROM tracker_db.role;", function (err, res) {
+    if (err) throw err;
+
+    console.table(res)
+  })
+  inquirer
+    .prompt([
+      {
+        type: `input`,
+        message: `What employee ID do you want to edit the role of?`,
+        name: `updateRole`
+      },
+      {
+        type: `input`,
+        message: `What role ID do you want to give them?`,
+        name: `newRole`
+      }
+    ]).then((answer) => {
+      console.log(answer)
+      connection.query("UPDATE tracker_db.employee SET role_id = ? WHERE id = ?", [answer.newRole, answer.updateRole], function (err, res) {
+        if (err) throw err;
+
+        console.log(`Role Updated`)
+        start()
+      })
+    })
+}
+
+const updateEmployeeManager = function () {
+  connection.query("SELECT * FROM tracker_db.employee;", function (err, res) {
+    if (err) throw err;
+
+    console.table(res)
+  })
+  connection.query("SELECT * FROM tracker_db.role;", function (err, res) {
+    if (err) throw err;
+
+    console.table(res)
+  })
+  inquirer
+    .prompt([
+      {
+        type: `input`,
+        message: `What employee ID do you want to edit the role of?`,
+        name: `updateRole`
+      },
+      {
+        type: `input`,
+        message: `What role ID do you want to give them?`,
+        name: `newRole`
+      }
+    ]).then((answer) => {
+      console.log(answer)
+      connection.query("UPDATE tracker_db.employee SET role_id = ? WHERE id = ?", [answer.newRole, answer.updateRole], function (err, res) {
+        if (err) throw err;
+
+        console.log(`Role Updated`)
+        start()
+      })
+    })
+}
+const viewAllRoles = function () {
+  connection.query("SELECT * FROM tracker_db.role;", function (err, res) {
+    if (err) throw err;
+
+    console.table(res)
+
+    start()
+  })
+}
+
+const addRole = function () {
+  console.log(`Adding a new role!...\n`)
+  inquirer
+    .prompt([
+      {
+        type: `input`,
+        message: `What is the role title?`,
+        name: `title`
+      },
+      {
+        type: `input`,
+        message: `What is the role's salary?`,
+        name: `salary`
+      },
+      {
+        type: `number`,
+        message: `What is the role's department ID number?`,
+        name: `department_id`
+      }
+    ]).then((answers) => {
+      connection.query(
+        "INSERT INTO tracker_db.role SET ?", answers, function (err, res) {
+          if (err) throw err;
+          console.log(`Role added!`);
+          start()
+        }
+      )
+
+    })
+}
+
+
+const removeRole = function () {
+  connection.query("SELECT * FROM tracker_db.role;", function (err, res) {
+    if (err) throw err;
+
+    console.table(res)
+  })
+  inquirer
+    .prompt({
+      type: `input`,
+      message: `What role ID do you want to delete?`,
+      name: `deleteID`
+    }).then((answer) => {
+      console.log(answer)
+      connection.query("DELETE FROM tracker_db.role WHERE id = ?", answer.deleteID, function (err, res) {
+        if (err) throw err;
+
+        console.log(`Role deleted`)
+        start()
+      })
+    })
+}
+
+const addDepartment = function (){
+  console.log(`Adding a new department!...\n`)
+  inquirer
+    .prompt([
+      {
+        type: `input`,
+        message: `What is the department called?`,
+        name: `name`
+      }
+    ]).then((answers) => {
+      connection.query(
+        "INSERT INTO tracker_db.department SET ?", answers, function (err, res) {
+          if (err) throw err;
+          console.log(`department added!`);
+          start()
+        }
+      )
+
+    })
+}
+
+const removeDepartment = function () {
+  connection.query("SELECT * FROM tracker_db.department;", function (err, res) {
+    if (err) throw err;
+
+    console.table(res)
+  })
+  inquirer
+    .prompt({
+      type: `input`,
+      message: `What department ID do you want to delete?`,
+      name: `deleteID`
+    }).then((answer) => {
+      console.log(answer)
+      connection.query("DELETE FROM tracker_db.department WHERE id = ?", answer.deleteID, function (err, res) {
+        if (err) throw err;
+
+        console.log(`Department deleted`)
+        start()
+      })
+    })
 }
 
 start()
