@@ -122,6 +122,16 @@ const getEmployeeByDepartment = function () {
   })
 }
 
+const getEmployeeByManager = function () {
+  connection.query("SELECT * FROM tracker_db.employee ORDER BY tracker_db.employee.manager_id;", function (err, res) {
+    if (err) throw err;
+
+    console.table(res)
+
+    start()
+  })
+}
+
 const addEmployee = function () {
   console.log(`Adding a new Employee!...\n`)
   inquirer
